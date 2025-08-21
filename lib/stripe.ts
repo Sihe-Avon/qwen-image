@@ -1,11 +1,10 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
+// 在构建时允许没有 STRIPE_SECRET_KEY
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+export const stripe = new Stripe(stripeSecretKey, {
+  apiVersion: '2025-07-30.basil',
 });
 
 // 产品配置

@@ -23,10 +23,7 @@ export async function callFalGenerate({ prompt, width, height, numOutputs }: Gen
     // Client ID:Secret 格式 (你的格式)
     const [clientId, clientSecret] = key.split(':');
     fal.config({ 
-      credentials: {
-        id: clientId,
-        secret: clientSecret
-      }
+      credentials: `${clientId}:${clientSecret}`
     });
   } else {
     // Serverless Key 格式 (fal_sk_...)
@@ -42,7 +39,6 @@ export async function callFalGenerate({ prompt, width, height, numOutputs }: Gen
         image_size: { width, height },
         num_images: numOutputs,
       },
-      logs: true,
     });
 
     const images = (result.images ?? []).map((img: any) => ({
