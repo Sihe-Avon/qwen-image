@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -69,5 +69,24 @@ export default function PaymentSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full flex items-center justify-center page-bg">
+        <div className="max-w-md mx-auto text-center">
+          <div className="glass-card p-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="animate-spin w-8 h-8 border-2 border-green-600 border-t-transparent rounded-full"></div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
   );
 }
