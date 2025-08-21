@@ -29,6 +29,16 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Qwen Image Generator (MVP)",
   description: "Create images from text with credits-based access.",
+  icons: {
+    icon: [
+      {
+        url: "/四角星.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/四角星.svg",
+    apple: "/四角星.svg",
+  },
 };
 
 export default function RootLayout({

@@ -7,6 +7,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "openid email profile",
+        },
+      },
       httpOptions: {
         timeout: 15000, // 增加超时时间到 15 秒
       },
@@ -52,6 +57,7 @@ export const authOptions: NextAuthOptions = {
   
   pages: {
     signIn: "/auth/signin",
+    error: "/auth/error", // 添加错误页面
   },
   
   session: {

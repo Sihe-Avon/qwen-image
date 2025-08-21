@@ -242,14 +242,6 @@ export default function Home() {
                   <p className="mt-2 text-xs text-gray-500">
                     Get 3 free credits + 2 bonus credits after completing profile
                   </p>
-                  <div className="mt-3 text-center">
-                    <button
-                      onClick={() => window.location.href = '/dev-login'}
-                      className="text-xs text-blue-600 hover:text-blue-800 underline"
-                    >
-                      Or use test login (if Google login fails)
-                    </button>
-                  </div>
                 </div>
               )}
 
