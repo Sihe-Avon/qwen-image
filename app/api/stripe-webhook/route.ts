@@ -8,7 +8,8 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   try {
     const body = await req.text();
-    const signature = headers().get("stripe-signature");
+    const headersList = await headers();
+    const signature = headersList.get("stripe-signature");
 
     if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
       return new NextResponse("Missing signature or webhook secret", { status: 400 });
