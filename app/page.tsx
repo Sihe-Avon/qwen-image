@@ -130,17 +130,7 @@ export default function Home() {
     }
   };
 
-  const completeProfile = async () => {
-    try {
-      const res = await fetch("/api/complete-profile", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        setMe((m) => m ? { ...m, credits: data.creditsBalance, profileCompleted: true } : m);
-      }
-    } catch (e) {
-      console.error("Failed to complete profile:", e);
-    }
-  };
+
 
   return (
     <div className="relative min-h-screen w-full page-bg">
@@ -207,21 +197,9 @@ export default function Home() {
                     <strong>{MAX_LONG_EDGE}px</strong>
                     <span className="opacity-70">| Your credits:</span>
                     <strong>{me?.credits ?? "-"}</strong>
-                  </div>
-
-                  {me && !me.profileCompleted && (
-                    <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                      <div className="text-sm text-orange-800">
-                        🎁 Complete your profile to earn 2 extra credits!
-                        <button
-                          onClick={completeProfile}
-                          className="ml-2 text-orange-600 underline hover:text-orange-700"
-                        >
-                          Complete now
-                        </button>
-                      </div>
         </div>
-                  )}
+
+
 
                   <button
                     onClick={onGenerate}
