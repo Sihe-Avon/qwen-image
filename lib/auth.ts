@@ -20,7 +20,14 @@ export const authOptions: NextAuthOptions = {
   
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google" && user.email) {
+      console.log("SignIn callback:", { user: user?.email, provider: account?.provider });
+      
+      if (account?.provider === "google") {
+        if (!user.email) {
+          console.error("Google user has no email");
+          return false;
+        }
+        
         try {
           const db = await getDb();
           await getOrCreateGoogleUser(db, {
@@ -28,12 +35,15 @@ export const authOptions: NextAuthOptions = {
             name: user.name || "",
             image: user.image || undefined,
           });
+          console.log("User created/updated successfully:", user.email);
           return true;
         } catch (error) {
           console.error("Error creating user:", error);
           return false;
         }
       }
+      
+      console.log("Provider not supported:", account?.provider);
       return false;
     },
     
