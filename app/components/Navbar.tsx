@@ -52,11 +52,6 @@ export function Navbar() {
                   </div>
                   <div className="px-4 py-2">
                     <div className="text-sm">Credits: {(session.user as any)?.creditsBalance || 0}</div>
-                    {!(session.user as any)?.profileCompleted && (
-                      <div className="text-xs text-orange-600 mt-1">
-                        Complete profile for +2 credits
-                      </div>
-                    )}
                   </div>
                   <div className="border-t border-gray-100 pt-2">
                     <button
