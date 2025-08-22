@@ -104,13 +104,13 @@ export async function getOrCreateGoogleUser(
   let user = db.data.users.find(u => u.email === googleUser.email);
   
   if (!user) {
-    // 新用户：给予 3 个初始 credits
+    // 新用户：给予 5 个初始 credits
     user = {
       id: nanoid(),
       email: googleUser.email,
       name: googleUser.name,
       image: googleUser.image,
-      creditsBalance: 3,
+      creditsBalance: 5,
       profileCompleted: false,
       registrationIp: clientIp,
       createdAt: Date.now()
