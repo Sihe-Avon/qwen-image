@@ -33,6 +33,13 @@ export async function callFalGenerate({ prompt, width, height, numOutputs }: Gen
   // Model id per playground page, adjust if needed
   const MODEL_ID = "fal-ai/qwen-image";
   try {
+    console.log(`FAL API call: ${MODEL_ID}`, {
+      prompt: prompt.substring(0, 50) + '...',
+      width,
+      height,
+      numOutputs
+    });
+
     const result: any = await fal.run(MODEL_ID, {
       input: {
         prompt,
