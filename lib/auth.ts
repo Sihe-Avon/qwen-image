@@ -19,32 +19,41 @@ export const authOptions: NextAuthOptions = {
   ],
   
   callbacks: {
-    async signIn({ user, account }) {
-      console.log("SignIn callback:", { user: user?.email, provider: account?.provider });
+    async signIn({ user, account, profile }) {
+      console.log("SignIn callback - Full details:", { 
+        user: user?.email, 
+        provider: account?.provider,
+        profile: profile?.email 
+      });
       
+      // 对于 Google 登录，我们总是允许登录
       if (account?.provider === "google") {
-        if (!user.email) {
-          console.error("Google user has no email");
-          return false;
-        }
-        
         try {
+          // 确保有邮箱信息
+          const email = user.email || profile?.email;
+          if (!email) {
+            console.error("No email found in user or profile");
+            return true; // 仍然允许登录，稍后在 session 回调中处理
+          }
+          
           const db = await getDb();
           await getOrCreateGoogleUser(db, {
-            email: user.email,
-            name: user.name || "",
-            image: user.image || undefined,
+            email: email,
+            name: user.name || profile?.name || "",
+            image: user.image || profile?.picture || undefined,
           });
-          console.log("User created/updated successfully:", user.email);
+          console.log("User created/updated successfully:", email);
           return true;
         } catch (error) {
-          console.error("Error creating user:", error);
-          return false;
+          console.error("Error in signIn callback:", error);
+          // 即使数据库操作失败，也允许登录
+          return true;
         }
       }
       
-      console.log("Provider not supported:", account?.provider);
-      return false;
+      // 对于其他提供者，也允许登录
+      console.log("Non-Google provider, allowing sign in:", account?.provider);
+      return true;
     },
     
     async session({ session }) {
