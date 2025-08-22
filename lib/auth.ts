@@ -40,7 +40,7 @@ export const authOptions: NextAuthOptions = {
           await getOrCreateGoogleUser(db, {
             email: email,
             name: user.name || profile?.name || "",
-            image: user.image || profile?.picture || undefined,
+            image: user.image || (profile as any)?.picture || undefined,
           });
           console.log("User created/updated successfully:", email);
           return true;
