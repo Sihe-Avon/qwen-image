@@ -218,7 +218,7 @@ export default function Home() {
                     Sign in with Google to Generate
                   </button>
                   <p className="mt-2 text-xs text-gray-500">
-                    Get 3 free credits + 2 bonus credits after completing profile
+                    Get 5 free credits to start creating images
                   </p>
                 </div>
               )}
