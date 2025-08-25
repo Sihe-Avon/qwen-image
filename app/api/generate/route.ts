@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getDb, recordGeneration, canUseFreeCreditToday, recordFreeUsage } from "@/lib/db";
+import { getUserByEmail, updateUserCredits, recordGeneration } from "@/lib/db-simple";
 import { callFalGenerate } from "@/lib/fal";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
+import { nanoid } from "nanoid";
 
 const schema = z.object({
   prompt: z.string().min(1),
@@ -69,37 +70,30 @@ export async function POST(req: Request) {
   const mp = Math.ceil((width * height) / 1_000_000);
   const costCredits = mp * numOutputs;
 
-  const db = await getDb();
-  const user = db.data.users.find(u => u.email === userEmail);
+  const user = await getUserByEmail(userEmail);
   if (!user) {
     return new NextResponse("User not found", { status: 404 });
   }
 
   // 检查用户余额
   if (user.creditsBalance < costCredits) {
-    // 检查今日免费额度
-    const canUseFree = await canUseFreeCreditToday(db, user.id, costCredits);
-    if (!canUseFree) {
-      return NextResponse.json({
-        error: "Insufficient credits and daily free limit reached",
-        needCredits: costCredits,
-        dailyLimitReached: true
-      }, { status: 402 });
-    }
+    return NextResponse.json({
+      error: "Insufficient credits",
+      needCredits: costCredits,
+      currentCredits: user.creditsBalance
+    }, { status: 402 });
   }
 
-  // 预扣 credits（如果用户有余额）或记录免费使用
-  const usingFreeCredits = user.creditsBalance < costCredits;
-  if (!usingFreeCredits) {
-    user.creditsBalance -= costCredits;
-  }
-  await db.write();
+  // 预扣 credits
+  await updateUserCredits(userEmail, user.creditsBalance - costCredits);
 
   try {
     const images = await callFalGenerate({ prompt, width, height, numOutputs });
     
     // 记录生成历史
-    await recordGeneration(db, user.id, {
+    await recordGeneration({
+      id: nanoid(),
+      userId: user.id,
       prompt,
       width,
       height,
@@ -107,25 +101,21 @@ export async function POST(req: Request) {
       costCredits,
       images,
       status: "succeeded",
+      createdAt: Date.now()
     });
 
-    // 如果使用了免费额度，记录到每日统计
-    if (usingFreeCredits) {
-      await recordFreeUsage(db, user.id, costCredits);
-    }
+    // 获取最新的用户余额
+    const updatedUser = await getUserByEmail(userEmail);
+    const remainingCredits = updatedUser?.creditsBalance || 0;
 
     return NextResponse.json({ 
       images, 
       costCredits,
-      usingFreeCredits,
-      remainingCredits: user.creditsBalance
+      remainingCredits
     });
   } catch (e: any) {
-    // 退款（如果预扣了用户余额）
-    if (!usingFreeCredits) {
-      user.creditsBalance += costCredits;
-      await db.write();
-    }
+    // 退款
+    await updateUserCredits(userEmail, user.creditsBalance);
     
     console.error("FAL generate error:", e);
     const msg = e?.message || "Generation failed";
