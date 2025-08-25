@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb, getOrCreateGoogleUser } from '@/lib/db'
+import { getOrCreateUser } from '@/lib/db-simple'
 import { cookies } from 'next/headers'
 import { SignJWT } from 'jose'
 
@@ -12,8 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 创建或获取用户
-    const db = await getDb()
-    const user = await getOrCreateGoogleUser(db, { email, name, image })
+    const user = await getOrCreateUser(email, name, image)
     
     // 创建一个简单的会话 token
     const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret')
