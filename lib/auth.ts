@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { getDb, getOrCreateGoogleUser } from "./db";
+import { getOrCreateUser, getUserByEmail } from "./db-simple";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -36,12 +36,20 @@ export const authOptions: NextAuthOptions = {
             return true; // 仍然允许登录，稍后在 session 回调中处理
           }
           
+<<<<<<< HEAD
           const db = await getDb();
           await getOrCreateGoogleUser(db, {
             email: email,
             name: user.name || profile?.name || "",
             image: user.image || (profile as any)?.picture || undefined,
           });
+=======
+          await getOrCreateUser(
+            email,
+            user.name || profile?.name || "",
+            user.image || (profile as any)?.picture || undefined
+          );
+>>>>>>> c695f37 (Fix credits display issue and improve database architecture)
           console.log("User created/updated successfully:", email);
           return true;
         } catch (error) {
@@ -59,8 +67,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session }) {
       if (session.user?.email) {
         try {
-          const db = await getDb();
-          const dbUser = db.data.users.find(u => u.email === session.user.email);
+          const dbUser = await getUserByEmail(session.user.email);
           if (dbUser) {
             session.user.id = dbUser.id;
             session.user.creditsBalance = dbUser.creditsBalance;
