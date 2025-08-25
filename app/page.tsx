@@ -305,8 +305,8 @@ export default function Home() {
       {/* CTA */}
       <section className="px-4 py-12">
         <div className="max-w-3xl mx-auto rounded-xl border border-black/10 dark:border-white/15 p-6 text-center bg-background/70">
-          <h3 className="text-xl font-semibold mb-2">Bring ideas to life in seconds</h3>
-          <p className="text-sm opacity-80 mb-4">Focus on the message—let the model handle layout and style.</p>
+          <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-2" style={{ fontFamily: "var(--font-display), var(--font-inter), system-ui" }}>Bring ideas to life in seconds</h3>
+          <p className="text-base opacity-80 mb-4">Focus on the message—let the model handle layout and style.</p>
           <a href="#" onClick={(e)=>{e.preventDefault(); const el=document.querySelector('textarea'); if(el) (el as HTMLTextAreaElement).focus();}}
              className="ui-button inline-flex">Generate Your First Image</a>
         </div>
