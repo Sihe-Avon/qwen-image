@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { getDb, getTodayUsage } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const db = await getDb();
-    const todayUsage = await getTodayUsage(db);
+    // TODO: Implement stats with new database adapter
+    const todayUsage = { totalFreeCreditsUsed: 0, totalFreeCreditsValue: 0, uniqueUsers: [] };
     
     // 获取最近7天的使用情况
     const last7Days = [];
