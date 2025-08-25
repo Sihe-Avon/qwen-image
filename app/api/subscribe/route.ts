@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getUserByEmail, updateUserCredits } from "@/lib/db-simple";
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
@@ -22,12 +22,10 @@ export async function POST(request: Request) {
 
     // 检查用户认证
     const session = await getServerSession(authOptions);
-    let userId: string | null = null;
+    let userEmail: string | null = null;
 
     if (session?.user?.email) {
-      const db = await getDb();
-      const user = db.data.users.find(u => u.email === session.user.email);
-      userId = user?.id || null;
+      userEmail = session.user.email;
     } else {
       // 检查开发者登录 session
       const cookieStore = await cookies();
@@ -37,27 +35,25 @@ export async function POST(request: Request) {
         try {
           const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret');
           const { payload } = await jwtVerify(devToken.value, secret);
-          userId = payload.sub || null;
+          userEmail = payload.email as string;
         } catch (e) {
           // Token 无效
         }
       }
     }
 
-    if (!userId) {
+    if (!userEmail) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
-    const user = db.data.users.find(u => u.id === userId);
+    const user = await getUserByEmail(userEmail);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // MVP: 直接加额模拟订阅成功（真实项目应集成 Stripe Checkout + Webhook）
     const add = MONTHLY_CREDITS[parse.data.plan];
-    user.creditsBalance += add;
-    await db.write();
+    await updateUserCredits(userEmail, user.creditsBalance + add);
     
     return NextResponse.redirect(new URL("/", request.url), { status: 302 });
   } catch (error) {
@@ -65,9 +61,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-
-
-
-
-
