@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getUserByEmail, getUserGenerations } from "@/lib/db-simple";
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
@@ -14,8 +14,7 @@ export async function GET() {
     let userId: string | null = null;
 
     if (session?.user?.email) {
-      const db = await getDb();
-      const user = db.data.users.find(u => u.email === session.user.email);
+      const user = await getUserByEmail(session.user.email);
       userId = user?.id || null;
     } else {
       // 检查开发者登录 session
@@ -37,11 +36,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const db = await getDb();
-    const gens = db.data.generations
-      .filter((g) => g.userId === userId)
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 50);
+    const gens = await getUserGenerations(userId);
     
     return NextResponse.json({ items: gens });
   } catch (error) {
@@ -49,7 +44,3 @@ export async function GET() {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-
-
-
