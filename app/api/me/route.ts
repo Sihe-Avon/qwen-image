@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getDb } from "@/lib/db";
+import { getUserByEmail } from "@/lib/db-simple";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 
@@ -35,8 +35,7 @@ export async function GET() {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const db = await getDb();
-    const user = db.data.users.find(u => u.email === userEmail);
+    const user = await getUserByEmail(userEmail);
     
     if (!user) {
       return new NextResponse("User not found", { status: 404 });
