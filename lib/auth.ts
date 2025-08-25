@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
         },
       },
       httpOptions: {
-        timeout: 15000, // 增加超时时间到 15 秒
+        timeout: 15000,
       },
     }),
   ],
@@ -26,40 +26,27 @@ export const authOptions: NextAuthOptions = {
         profile: profile?.email 
       });
       
-      // 对于 Google 登录，我们总是允许登录
       if (account?.provider === "google") {
         try {
-          // 确保有邮箱信息
           const email = user.email || profile?.email;
           if (!email) {
             console.error("No email found in user or profile");
-            return true; // 仍然允许登录，稍后在 session 回调中处理
+            return true;
           }
           
-<<<<<<< HEAD
-          const db = await getDb();
-          await getOrCreateGoogleUser(db, {
-            email: email,
-            name: user.name || profile?.name || "",
-            image: user.image || (profile as any)?.picture || undefined,
-          });
-=======
           await getOrCreateUser(
             email,
             user.name || profile?.name || "",
             user.image || (profile as any)?.picture || undefined
           );
->>>>>>> c695f37 (Fix credits display issue and improve database architecture)
           console.log("User created/updated successfully:", email);
           return true;
         } catch (error) {
           console.error("Error in signIn callback:", error);
-          // 即使数据库操作失败，也允许登录
           return true;
         }
       }
       
-      // 对于其他提供者，也允许登录
       console.log("Non-Google provider, allowing sign in:", account?.provider);
       return true;
     },
@@ -83,14 +70,13 @@ export const authOptions: NextAuthOptions = {
   
   pages: {
     signIn: "/auth/signin",
-    error: "/auth/error", // 添加错误页面
+    error: "/auth/error",
   },
   
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 天
+    maxAge: 30 * 24 * 60 * 60,
   },
   
-  // 添加调试信息
   debug: process.env.NODE_ENV === 'development',
 };
