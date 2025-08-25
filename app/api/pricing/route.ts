@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
-import { getDb, getPricingTest } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const testName = searchParams.get("test"); // ?test=test_a
-
-    const db = await getDb();
-    const pricingTest = await getPricingTest(db, testName || undefined);
+    // TODO: Implement pricing with new database adapter
+    // For now, return default pricing
+    const pricingTest = { 
+      id: "default", 
+      name: "default", 
+      price: 9.99, 
+      credits: 100, 
+      isActive: true 
+    };
     
     return NextResponse.json({
       testName: pricingTest.name,
