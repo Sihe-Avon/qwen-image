@@ -82,6 +82,9 @@ export async function getOrCreateUser(
 ): Promise<DbUser> {
   if (isProduction) {
     // 生产环境：使用 Postgres
+    // 首次调用时确保数据库表已创建
+    await initDatabase();
+    
     try {
       // 先查找用户
       const result = await sql`
