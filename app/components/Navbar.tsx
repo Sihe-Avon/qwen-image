@@ -7,11 +7,42 @@ export function Navbar() {
   const { data: session, status } = useSession();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [userCredits, setUserCredits] = useState<number | null>(null);
 
   // 确保在客户端渲染，减少 hydration 问题
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // 获取最新的用户credits信息
+  const refreshCredits = async () => {
+    if (session?.user?.email) {
+      try {
+        const r = await fetch("/api/me");
+        if (r.ok) {
+          const data = await r.json();
+          setUserCredits(data.credits);
+        }
+      } catch {
+        // 如果API调用失败，使用session中的备用数据
+        setUserCredits((session.user as any)?.creditsBalance || 0);
+      }
+    }
+  };
+
+  useEffect(() => {
+    refreshCredits();
+  }, [session]);
+
+  // 监听自定义事件来刷新credits
+  useEffect(() => {
+    const handleCreditsUpdate = () => {
+      refreshCredits();
+    };
+
+    window.addEventListener('creditsUpdated', handleCreditsUpdate);
+    return () => window.removeEventListener('creditsUpdated', handleCreditsUpdate);
+  }, [session]);
 
   return (
     <header className="w-full sticky top-0 z-10 backdrop-blur bg-background/70 border-b border-black/5 dark:border-white/10">
@@ -40,7 +71,7 @@ export function Navbar() {
                   className="w-8 h-8 rounded-full border border-gray-200"
                 />
                 <div className="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                  ⚡ {(session.user as any)?.creditsBalance || 0}
+                  ⚡ {userCredits !== null ? userCredits : ((session.user as any)?.creditsBalance || 0)}
                 </div>
               </button>
               
@@ -51,7 +82,7 @@ export function Navbar() {
                     <div className="text-xs text-gray-500">{session.user?.email}</div>
                   </div>
                   <div className="px-4 py-2">
-                    <div className="text-sm">Credits: {(session.user as any)?.creditsBalance || 0}</div>
+                    <div className="text-sm">Credits: {userCredits !== null ? userCredits : ((session.user as any)?.creditsBalance || 0)}</div>
                   </div>
                   <div className="border-t border-gray-100 pt-2">
                     <button
