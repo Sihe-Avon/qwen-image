@@ -67,8 +67,11 @@ export async function POST(req: Request) {
     return new NextResponse("Resolution too large", { status: 400 });
   }
 
-  const mp = Math.ceil((width * height) / 1_000_000);
-  const costCredits = mp * numOutputs;
+  // 优化计费逻辑：1024x1024 = 1 credit, 其他尺寸按比例
+  const basePixels = 1024 * 1024; // 1M pixels = 1 credit
+  const actualPixels = width * height;
+  const creditPerImage = Math.max(1, Math.ceil(actualPixels / basePixels));
+  const costCredits = creditPerImage * numOutputs;
 
   const user = await getUserByEmail(userEmail);
   if (!user) {
