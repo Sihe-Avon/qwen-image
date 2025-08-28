@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useDevSession } from "@/hooks/useDevSession";
 import FancySelect from "@/app/components/FancySelect";
+import { ImageModal } from "@/app/components/ImageModal";
 
 type Aspect = "1:1" | "16:9" | "3:2" | "2:3" | "4:3" | "9:16";
 
@@ -54,6 +55,7 @@ export default function Home() {
   const [images, setImages] = useState<Array<{ url: string; w: number; h: number }>>([]);
   const [me, setMe] = useState<{ credits: number; profileCompleted: boolean; user: any } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
   // 固定定价信息
   const pricingInfo = {
     price: 9.99,
@@ -72,8 +74,11 @@ export default function Home() {
 
   const size = useMemo(() => ASPECT_TO_SIZE[aspect], [aspect]);
   const estimatedCredits = useMemo(() => {
-    const mp = Math.ceil((size.width * size.height) / 1_000_000);
-    return mp * outputs;
+    // 优化计费逻辑：1024x1024 = 1 credit, 其他尺寸按比例
+    const basePixels = 1024 * 1024; // 1M pixels = 1 credit
+    const actualPixels = size.width * size.height;
+    const creditPerImage = Math.max(1, Math.ceil(actualPixels / basePixels));
+    return creditPerImage * outputs;
   }, [size, outputs]);
 
   const onGenerate = async () => {
@@ -116,13 +121,10 @@ export default function Home() {
       setImages(data.images.map((i: any) => ({ url: i.url, w: i.width, h: i.height })));
       
       // 更新用户余额
-      if (data.usingFreeCredits) {
-        // 使用了免费额度，不扣除用户余额
-        setMe((m) => m ? { ...m } : m);
-      } else {
-        // 使用了用户余额
-        setMe((m) => m ? { ...m, credits: data.remainingCredits } : m);
-      }
+      setMe((m) => m ? { ...m, credits: data.remainingCredits } : m);
+      
+      // 触发全局credits更新事件，通知Navbar刷新
+      window.dispatchEvent(new CustomEvent('creditsUpdated'));
     } catch (e: any) {
       setError(e.message || "Failed to generate");
     } finally {
@@ -244,9 +246,13 @@ export default function Home() {
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   {images.map((im, idx) => (
-                    <a key={idx} href={im.url} target="_blank" className="block border border-black/10 dark:border-white/15 rounded-md overflow-hidden">
-                      <img src={im.url} alt="result" className="w-full h-auto" />
-                    </a>
+                    <button 
+                      key={idx} 
+                      onClick={() => setSelectedImage({ src: im.url, alt: `Generated image ${idx + 1}` })}
+                      className="block border border-black/10 dark:border-white/15 rounded-md overflow-hidden hover:border-blue-300 transition-colors"
+                    >
+                      <img src={im.url} alt={`Generated image ${idx + 1}`} className="w-full h-auto" />
+                    </button>
                   ))}
                 </div>
               )}
@@ -329,6 +335,16 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <ImageModal
+          src={selectedImage.src}
+          alt={selectedImage.alt}
+          isOpen={!!selectedImage}
+          onClose={() => setSelectedImage(null)}
+        />
+      )}
     </div>
   );
 }
