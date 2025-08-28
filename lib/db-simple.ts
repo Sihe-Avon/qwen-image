@@ -232,7 +232,7 @@ export async function getUserGenerations(userId: string): Promise<DbGeneration[]
       width: row.width,
       height: row.height,
       numOutputs: row.num_outputs,
-      images: JSON.parse(row.images),
+      images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images,
       costCredits: row.cost_credits,
       status: row.status,
       createdAt: row.created_at,
