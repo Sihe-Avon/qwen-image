@@ -11,6 +11,7 @@ interface ImageModalProps {
 
 export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
   const [downloading, setDownloading] = useState(false);
+  const [showCopyToast, setShowCopyToast] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,17 +42,22 @@ export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
       await navigator.clipboard.write([
         new ClipboardItem({ [blob.type]: blob })
       ]);
-      alert('Image copied to clipboard!');
+      showToast('Image copied to clipboard!');
     } catch (error) {
       console.error('Copy failed:', error);
       // Fallback: copy URL
       try {
         await navigator.clipboard.writeText(src);
-        alert('Image URL copied to clipboard!');
+        showToast('Image URL copied to clipboard!');
       } catch {
-        alert('Failed to copy image');
+        showToast('Failed to copy image');
       }
     }
+  };
+
+  const showToast = (message: string) => {
+    setShowCopyToast(true);
+    setTimeout(() => setShowCopyToast(false), 2000);
   };
 
   return (
@@ -60,13 +66,13 @@ export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
       onClick={onClose}
     >
       <div 
-        className="relative max-w-4xl max-h-full"
+        className="relative max-w-3xl max-h-[80vh] w-full h-full flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl"
+          className="absolute -top-10 right-0 text-white hover:text-gray-300 text-2xl z-10"
         >
           ✕
         </button>
@@ -75,14 +81,14 @@ export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
         <img
           src={src}
           alt={alt}
-          className="max-w-full max-h-full object-contain rounded-lg"
+          className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
         />
         
         {/* Action buttons */}
         <div className="absolute bottom-4 right-4 flex gap-2">
           <button
             onClick={handleCopy}
-            className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm"
+            className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-sm transition-all"
             title="Copy image"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +99,7 @@ export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="bg-white/20 hover:bg-white/30 disabled:opacity-50 text-white p-2 rounded-full backdrop-blur-sm"
+            className="bg-white/20 hover:bg-white/30 disabled:opacity-50 text-white p-2 rounded-full backdrop-blur-sm transition-all"
             title="Download image"
           >
             {downloading ? (
@@ -105,6 +111,13 @@ export function ImageModal({ src, alt, isOpen, onClose }: ImageModalProps) {
             )}
           </button>
         </div>
+
+        {/* Toast notification */}
+        {showCopyToast && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse">
+            ✓ Image copied to clipboard!
+          </div>
+        )}
       </div>
     </div>
   );
