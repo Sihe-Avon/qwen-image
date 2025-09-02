@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "./components/SessionProvider";
 import { Navbar } from "./components/Navbar";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,7 +53,9 @@ export default function RootLayout({
         <SessionProvider>
           <div className="global-bg" />
           <Navbar />
-          <main>{children}</main></SessionProvider>
+          <main>{children}</main>
+        </SessionProvider>
+        <Analytics />
         <footer className="w-full border-t border-black/5 dark:border-white/10 mt-16">
           <div className="max-w-6xl mx-auto px-4 py-10 text-sm opacity-70 flex flex-col gap-2">
             <div>Qwen Image AI is an image generation model with strong text rendering.</div>
